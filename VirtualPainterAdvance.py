@@ -18,44 +18,15 @@ for imPath in myList:
 header = overlayList[0]
 
 cap=cv2.VideoCapture(0)
-cap.set(3,1210)
+cap.set(3,1280)
 cap.set(4,720)
 drawColor=(255,0,255)
 
 detector = htm.handDetector(detectionCon=0.75)
 xp,yp=0,0
-imgCanvas = np.zeros((720,1210,3),np.uint8)
+imgCanvas = np.zeros((720,1280,3),np.uint8)
 
-def stackImages(scale,imgArray):
-    rows = len(imgArray)
-    cols = len(imgArray[0])
-    rowsAvailable = isinstance(imgArray[0], list)
-    width = imgArray[0][0].shape[1]
-    height = imgArray[0][0].shape[0]
-    if rowsAvailable:
-        for x in range ( 0, rows):
-            for y in range(0, cols):
-                if imgArray[x][y].shape[:2] == imgArray[0][0].shape [:2]:
-                    imgArray[x][y] = cv2.resize(imgArray[x][y], (0, 0), None, scale, scale)
-                else:
-                    imgArray[x][y] = cv2.resize(imgArray[x][y], (imgArray[0][0].shape[1], imgArray[0][0].shape[0]), None, scale, scale)
-                if len(imgArray[x][y].shape) == 2: imgArray[x][y]= cv2.cvtColor( imgArray[x][y], cv2.COLOR_GRAY2BGR)
-        imageBlank = np.zeros((height, width, 3), np.uint8)
-        hor = [imageBlank]*rows
-        hor_con = [imageBlank]*rows
-        for x in range(0, rows):
-            hor[x] = np.hstack(imgArray[x])
-        ver = np.vstack(hor)
-    else:
-        for x in range(0, rows):
-            if imgArray[x].shape[:2] == imgArray[0].shape[:2]:
-                imgArray[x] = cv2.resize(imgArray[x], (0, 0), None, scale, scale)
-            else:
-                imgArray[x] = cv2.resize(imgArray[x], (imgArray[0].shape[1], imgArray[0].shape[0]), None,scale, scale)
-            if len(imgArray[x].shape) == 2: imgArray[x] = cv2.cvtColor(imgArray[x], cv2.COLOR_GRAY2BGR)
-        hor= np.hstack(imgArray)
-        ver = hor
-    return ver
+
 
 while True:
     # 1.Import the image
@@ -108,16 +79,14 @@ while True:
                 cv2.line(img,(xp,yp),(x1,y1),drawColor,brushThickness)
                 cv2.line(imgCanvas, (xp, yp), (x1, y1), drawColor, brushThickness)
                 xp,yp=x1,y1
-    # imgGray = cv2.cvtColor(imgCanvas,cv2.COLOR_BGR2GRAY)
-    # _,imgInv = cv2.threshold(imgGray,50,255,cv2.THRESH_BINARY_INV)
-    # imgInv = cv2.cvtColor(imgInv,cv2.COLOR_GRAY2BGR)
-    # img=cv2.bitwise_and(img,imgInv)
-    # img=cv2.bitwise_or(img,imgCanvas)
+    imgGray = cv2.cvtColor(imgCanvas,cv2.COLOR_BGR2GRAY)
+    _,imgInv = cv2.threshold(imgGray,50,255,cv2.THRESH_BINARY_INV)
+    imgInv = cv2.cvtColor(imgInv,cv2.COLOR_GRAY2BGR)
+    img=cv2.bitwise_and(img,imgInv)
+    img=cv2.bitwise_or(img,imgCanvas)
     #setting the header image
     img[0:110,30:1230]=header
-    # imgStack = stackImages(0.8, [[img],[imgCanvas]])
-
-    # cv2.imshow("Image",imgStack)
+    
     cv2.imshow("Image",img)
     cv2.imshow("Canvas",imgCanvas)
     cv2.waitKey(1)
